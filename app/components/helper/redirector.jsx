@@ -1,39 +1,26 @@
 "use client";
 import { useEffect } from "react";
 
-const TARGET = "https://t.me/DailyEarning545_Bot?start=ref_6201077882";
+const TARGET = "https://www.redoyanulhaque.me";
 
-export default function Redirector({ delay = 1500 }) {
+export default function Redirector() {
   useEffect(() => {
-    let timeoutId;
-
     const doRedirect = () => {
       window.location.href = TARGET;
     };
 
-    const scheduleRedirect = (d = delay) => {
-      if (timeoutId) clearTimeout(timeoutId);
-      timeoutId = setTimeout(doRedirect, d);
-    };
+    // immediate redirect
+    doRedirect();
 
-    // initial redirect after delay
-    scheduleRedirect(delay);
-
-    // re-run redirect when page is shown from bfcache
+    // also re-trigger on navigation/back or when page is restored from bfcache
     const onPageShow = (e) => {
-      if (e.persisted) scheduleRedirect(200);
+      if (e.persisted) doRedirect();
     };
-
-    // re-run when document becomes visible (user returns via back or switching tabs)
     const onVisibility = () => {
-      if (document.visibilityState === "visible") scheduleRedirect(200);
+      if (document.visibilityState === "visible") doRedirect();
     };
-
-    // re-run on history navigation (back/forward)
-    const onPopState = () => scheduleRedirect(200);
-
-    // also trigger on window focus
-    const onFocus = () => scheduleRedirect(200);
+    const onPopState = () => doRedirect();
+    const onFocus = () => doRedirect();
 
     window.addEventListener("pageshow", onPageShow);
     document.addEventListener("visibilitychange", onVisibility);
@@ -41,13 +28,12 @@ export default function Redirector({ delay = 1500 }) {
     window.addEventListener("focus", onFocus);
 
     return () => {
-      if (timeoutId) clearTimeout(timeoutId);
       window.removeEventListener("pageshow", onPageShow);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("popstate", onPopState);
       window.removeEventListener("focus", onFocus);
     };
-  }, [delay]);
+  }, []);
 
   return null;
 }
